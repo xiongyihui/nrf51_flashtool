@@ -7,7 +7,8 @@ from struct import unpack
 import sys
 import subprocess
 
-from pyOCD.interface import INTERFACE, usb_backend
+from pyOCD.pyDAPAccess.interface import INTERFACE, usb_backend
+from pyOCD.pyDAPAccess import DAPAccess
 from pyOCD.board import MbedBoard
 
 import logging
@@ -191,15 +192,10 @@ if __name__ == "__main__":
     
     adapter = None
     try:
-        interfaces = INTERFACE[usb_backend].getAllConnectedInterface(VID, PID)
-        if interfaces == None:
-            print "Not find a mbed interface"
-            sys.exit(1)
-            
-        # Use the first one
-        first_interface = interfaces[0]
-        adapter = MbedBoard(first_interface,"9009","20151026")
-        adapter.init()
+        adapter = MbedBoard.chooseBoard(target_override='nrf51', blocking=False)
+        if adapter is None:
+            print("Error: There is no board connected.")
+            sys.exit(-1)
         target = adapter.target
         target.halt()
         
